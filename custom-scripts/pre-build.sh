@@ -9,8 +9,8 @@ chmod +x $BASE_DIR/target/etc/init.d/S50load-drivers
 cp $BASE_DIR/../custom-scripts/S52autotune $BASE_DIR/target/etc/init.d
 chmod +x $BASE_DIR/target/etc/init.d/S52autotune
 
-tar -zxvf $BASE_DIR/../custom-scripts/packages/xenomai-3.tar.gz -C $BASE_DIR/build
-pushd $BASE_DIR/build/xenomai-3
+tar -zxvf $BASE_DIR/../custom-scripts/packages/xenomai-3.1.tar.gz -C $BASE_DIR/build
+pushd $BASE_DIR/build/xenomai-3.1
 scripts/bootstrap
 export CFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=neon -ffast-math"
 export LDFLAGS="-march=armv7-a -mfloat-abi=hard -mfpu=neon -ffast-math"
