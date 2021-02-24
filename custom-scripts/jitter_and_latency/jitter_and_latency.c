@@ -100,10 +100,10 @@ void setup()
 {
     int ret;
     ret = write(pin22, &value22, sizeof(value22));
-    pin22 = open("/dev/rtdm/pinctrl-bcm2835/gpio992", O_WRONLY);
+    pin22 = open("/dev/rtdm/pinctrl-bcm2835/gpio2016", O_WRONLY);
     ret = ioctl(pin22, GPIO_RTIOC_DIR_OUT, &value22);
     ret = write(pin22, &value22, sizeof(value22));
-    pin24 = open("/dev/rtdm/pinctrl-bcm2835/gpio994", O_RDONLY);
+    pin24 = open("/dev/rtdm/pinctrl-bcm2835/gpio2018", O_RDONLY);
     int xeno_trigger = GPIO_TRIGGER_EDGE_RISING;
     ret = ioctl(pin24, GPIO_RTIOC_IRQEN, &xeno_trigger);
 }
