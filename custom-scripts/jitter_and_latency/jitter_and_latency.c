@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 #include <unistd.h>
 #include <alchemy/task.h>
 #include <alchemy/timer.h>
@@ -96,27 +98,69 @@ void create_time_diffs_csv(char * filename, RTIME number_of_values,
 }
 
 
-void setup()
+void setup_gpio()
 {
-    int ret;
-    ret = write(pin22, &value22, sizeof(value22));
+    int ret, error_code;
+
     pin22 = open("/dev/rtdm/pinctrl-bcm2835/gpio2016", O_WRONLY);
+    if (pin22 == -1)
+    {
+        error_code = errno;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
+
     ret = ioctl(pin22, GPIO_RTIOC_DIR_OUT, &value22);
+    if (ret == -1)
+    {
+        error_code = errno;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
+    
     ret = write(pin22, &value22, sizeof(value22));
+    if (ret == -1)
+    {
+        error_code = errno;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
+
     pin24 = open("/dev/rtdm/pinctrl-bcm2835/gpio2018", O_RDONLY);
+    if (pin24 == -1)
+    {
+        error_code = errno;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
+
     int xeno_trigger = GPIO_TRIGGER_EDGE_RISING;
     ret = ioctl(pin24, GPIO_RTIOC_IRQEN, &xeno_trigger);
+    if (ret == -1)
+    {
+        error_code = errno;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
 }
 
 int main(int argc, char *argv[])
 {
+    int ret, error_code;
     RT_TASK task_led;
     RT_TASK task_interrupt;
     RTIME *time_diff;
     RTIME average;
-    setup();
 
-    rt_sem_create(&sem, "sem1", 0, S_FIFO);
+    setup_gpio();
+
+    ret = rt_sem_create(&sem, "sem1", 0, S_FIFO);
+    if (ret != 0) 
+    {
+        error_code = -ret;
+        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        exit(1);
+    }
 
     rt_task_create(&task_interrupt, "Interrupt task", 0, 99, 0);
     rt_task_start(&task_interrupt, &led_interrupt, 0);
