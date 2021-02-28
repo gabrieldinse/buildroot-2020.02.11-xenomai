@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <poll.h>
 #include <alchemy/task.h>
 #include <alchemy/timer.h>
 #include <alchemy/sem.h>
@@ -24,7 +25,7 @@ int value24;
 
 void blink_led(void *arg)
 {
-    int ret, i;
+    int ret, i, error_code;
     RT_TASK_INFO taskinfo;
     rt_task_inquire(NULL, &taskinfo);
     printf("Executing task: %s\n", taskinfo.name);
@@ -36,9 +37,26 @@ void blink_led(void *arg)
         value22 = 1;
         times_blink[i] = rt_timer_read();
         ret = write(pin22, &value22, sizeof(value22));
+        if (ret == -1)
+        {
+            error_code = errno;
+            printf("Error: writing to led pin failed. Code %d, %s\n",
+                    error_code, strerror(error_code));
+            exit(1);
+        }
+        
         rt_task_sleep(250 * usec);
         value22 = 0;
+
         ret = write(pin22, &value22, sizeof(value22));
+        if (ret == -1)
+        {
+            error_code = errno;
+            printf("Error: writing to led pin failed. Code %d, %s\n",
+                    error_code, strerror(error_code));
+            exit(1);
+        }
+
         rt_task_wait_period(NULL);
     }
 }
@@ -46,15 +64,27 @@ void blink_led(void *arg)
 
 void led_interrupt(void *arg)
 {
-    int ret, i;
+    int ret, error_code, interrupt_count = 0;
+    RTIME interrupt_time;
+
     RT_TASK_INFO taskinfo;
     rt_task_inquire(NULL, &taskinfo);
     printf("Executing task: %s\n", taskinfo.name);
     
-    for (i = 0; i < NUM_SAMPLES; ++i)
+    while (interrupt_count < NUM_SAMPLES)
     {
         ret = read(pin24, &value24, sizeof(value24));
-        times_interrupt[i] = rt_timer_read();
+        interrupt_time = rt_timer_read();
+        if (ret == -1)  
+        {
+            error_code = errno;
+            printf("Error: reading interrupt pin failed. Code %d, %s\n",
+                   error_code, strerror(error_code));
+            exit(1);
+        }
+
+        times_interrupt[interrupt_count] = interrupt_time;
+        interrupt_count++;
     }
     rt_sem_v(&sem);
 }
@@ -106,7 +136,8 @@ void setup_gpio()
     if (pin22 == -1)
     {
         error_code = errno;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: opening led pin failed. Code %d, %s\n",
+                error_code, strerror(error_code));
         exit(1);
     }
 
@@ -114,7 +145,8 @@ void setup_gpio()
     if (ret == -1)
     {
         error_code = errno;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: led pin setup failed. Code %d, %s\n",
+                error_code, strerror(error_code));
         exit(1);
     }
     
@@ -122,7 +154,8 @@ void setup_gpio()
     if (ret == -1)
     {
         error_code = errno;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: writing to led pin failed. Code %d, %s\n",
+                error_code, strerror(error_code));
         exit(1);
     }
 
@@ -130,7 +163,8 @@ void setup_gpio()
     if (pin24 == -1)
     {
         error_code = errno;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: opening interrupt pin failed. Code %d, %s\n",
+                error_code, strerror(error_code));
         exit(1);
     }
 
@@ -139,7 +173,8 @@ void setup_gpio()
     if (ret == -1)
     {
         error_code = errno;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: interrupt pin setup failed. Code %d, %s\n",
+                error_code, strerror(error_code));
         exit(1);
     }
 }
