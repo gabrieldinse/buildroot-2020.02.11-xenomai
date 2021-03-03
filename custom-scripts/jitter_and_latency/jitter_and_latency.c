@@ -12,6 +12,7 @@
 #define NUM_SAMPLES 100000
 
 RTIME usec = 1e3;
+RTIME msec = 1e6;
 
 RTIME times_blink[NUM_SAMPLES];
 RTIME times_interrupt[NUM_SAMPLES];
@@ -19,36 +20,22 @@ RTIME times_interrupt[NUM_SAMPLES];
 RT_SEM sem;
 
 int pin22, pin24;
-int value22 = 0;
-int value24;
 
 
 void blink_led(void *arg)
 {
-    int ret, i, error_code;
+    int ret, i, error_code, value = 1;
     RT_TASK_INFO taskinfo;
+
     rt_task_inquire(NULL, &taskinfo);
     printf("Executing task: %s\n", taskinfo.name);
 
-    rt_task_set_periodic(NULL, TM_NOW, 500 * usec);
+    rt_task_set_periodic(NULL, TM_NOW, 1 * msec);
 
     for (i = 0; i < NUM_SAMPLES; ++i)
     {
-        value22 = 1;
         times_blink[i] = rt_timer_read();
-        ret = write(pin22, &value22, sizeof(value22));
-        if (ret == -1)
-        {
-            error_code = errno;
-            printf("Error: writing to led pin failed. Code %d, %s\n",
-                    error_code, strerror(error_code));
-            exit(1);
-        }
-        
-        rt_task_sleep(250 * usec);
-        value22 = 0;
-
-        ret = write(pin22, &value22, sizeof(value22));
+        ret = write(pin22, &value, sizeof(value));
         if (ret == -1)
         {
             error_code = errno;
@@ -57,6 +44,7 @@ void blink_led(void *arg)
             exit(1);
         }
 
+        value = !value; 
         rt_task_wait_period(NULL);
     }
 }
@@ -64,7 +52,7 @@ void blink_led(void *arg)
 
 void led_interrupt(void *arg)
 {
-    int ret, error_code, interrupt_count = 0;
+    int ret, error_code, value, interrupt_count = 0;
     RTIME interrupt_time;
 
     RT_TASK_INFO taskinfo;
@@ -73,7 +61,7 @@ void led_interrupt(void *arg)
     
     while (interrupt_count < NUM_SAMPLES)
     {
-        ret = read(pin24, &value24, sizeof(value24));
+        ret = read(pin24, &value, sizeof(value));
         interrupt_time = rt_timer_read();
         if (ret == -1)  
         {
@@ -130,7 +118,7 @@ void create_time_diffs_csv(char * filename, RTIME number_of_values,
 
 void setup_gpio()
 {
-    int ret, error_code;
+    int ret, error_code, value = 0;
 
     pin22 = open("/dev/rtdm/pinctrl-bcm2835/gpio2016", O_WRONLY);
     if (pin22 == -1)
@@ -141,7 +129,7 @@ void setup_gpio()
         exit(1);
     }
 
-    ret = ioctl(pin22, GPIO_RTIOC_DIR_OUT, &value22);
+    ret = ioctl(pin22, GPIO_RTIOC_DIR_OUT, &value);
     if (ret == -1)
     {
         error_code = errno;
@@ -150,7 +138,7 @@ void setup_gpio()
         exit(1);
     }
     
-    ret = write(pin22, &value22, sizeof(value22));
+    ret = write(pin22, &value, sizeof(value));
     if (ret == -1)
     {
         error_code = errno;
@@ -168,7 +156,7 @@ void setup_gpio()
         exit(1);
     }
 
-    int xeno_trigger = GPIO_TRIGGER_EDGE_RISING;
+    int xeno_trigger = GPIO_TRIGGER_EDGE_RISING | GPIO_TRIGGER_EDGE_FALLING;
     ret = ioctl(pin24, GPIO_RTIOC_IRQEN, &xeno_trigger);
     if (ret == -1)
     {
@@ -190,17 +178,42 @@ int main(int argc, char *argv[])
     setup_gpio();
 
     ret = rt_sem_create(&sem, "sem1", 0, S_FIFO);
+
+    rt_task_create(&task_interrupt, "Interrupt task", 0, 99, 0);
     if (ret != 0) 
     {
         error_code = -ret;
-        printf("Error: code %d, %s\n", error_code, strerror(error_code));
+        printf("Error: creating interrupt task failed. Code %d, %s\n", 
+                error_code, strerror(error_code));
         exit(1);
     }
 
-    rt_task_create(&task_interrupt, "Interrupt task", 0, 99, 0);
     rt_task_start(&task_interrupt, &led_interrupt, 0);
+    if (ret != 0) 
+    {
+        error_code = -ret;
+        printf("Error: starting interrupt task failed. Code %d, %s\n", 
+                error_code, strerror(error_code));
+        exit(1);
+    }
+    
     rt_task_create(&task_led, "Blink task", 0, 50, 0);
+    if (ret != 0) 
+    {
+        error_code = -ret;
+        printf("Error: creating blink task failed. Code %d, %s\n", error_code,
+                strerror(error_code));
+        exit(1);
+    }
+
     rt_task_start(&task_led, &blink_led, 0);
+    if (ret != 0) 
+    {
+        error_code = -ret;
+        printf("Error: starting interrupt task failed. Code %d, %s\n",
+                error_code, strerror(error_code));
+        exit(1);
+    }
 
     rt_sem_p(&sem, TM_INFINITE);
 

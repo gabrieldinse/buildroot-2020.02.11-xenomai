@@ -39,11 +39,11 @@ make -C $BASE_DIR/../custom-scripts/semaphore
 cp  $BASE_DIR/../custom-scripts/semaphore/sem_no_sync $BASE_DIR/target/usr/xenomai/bin
 cp  $BASE_DIR/../custom-scripts/semaphore/sem_toggle $BASE_DIR/target/usr/xenomai/bin
 
-    make -C $BASE_DIR/../custom-scripts/scheduling
-    cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched $BASE_DIR/target/usr/xenomai/bin
-    cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched2 $BASE_DIR/target/usr/xenomai/bin
-    cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched3 $BASE_DIR/target/usr/xenomai/bin
-    cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched4 $BASE_DIR/target/usr/xenomai/bin
+make -C $BASE_DIR/../custom-scripts/scheduling
+cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched $BASE_DIR/target/usr/xenomai/bin
+cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched2 $BASE_DIR/target/usr/xenomai/bin
+cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched3 $BASE_DIR/target/usr/xenomai/bin
+cp  $BASE_DIR/../custom-scripts/scheduling/priority_sched4 $BASE_DIR/target/usr/xenomai/bin
 
 make -C $BASE_DIR/../custom-scripts/rrb_scheduling
 cp  $BASE_DIR/../custom-scripts/rrb_scheduling/rrb_sched $BASE_DIR/target/usr/xenomai/bin
