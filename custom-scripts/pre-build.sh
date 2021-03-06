@@ -58,8 +58,7 @@ c
 
 make -C $BASE_DIR/../custom-scripts/jitter_and_latency
 cp  $BASE_DIR/../custom-scripts/jitter_and_latency/jitter_and_latency $BASE_DIR/target/usr/xenomai/bin
-cp  $BASE_DIR/../custom-scripts/jitter_and_latency/jitter_and_latency2 $BASE_DIR/target/usr/xenomai/bin
-cp  $BASE_DIR/../custom-scripts/jitter_and_latency/jitter_and_latency_no_worker $BASE_DIR/target/usr/xenomai/bin
+cp  $BASE_DIR/../custom-scripts/jitter_and_latency/jitter_and_latency_extern $BASE_DIR/target/usr/xenomai/bin
 
 
 #FIXME: This entry will repeat at each recompilation.

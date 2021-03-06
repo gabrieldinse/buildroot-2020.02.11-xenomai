@@ -4,7 +4,7 @@ CFLAGS := $(shell DESTDIR=$(STAGE) $(XENO_CONFIG) --rtdm --posix --alchemy --cfl
 LDFLAGS := $(shell DESTDIR=$(STAGE) $(XENO_CONFIG) --rtdm --posix --alchemy --ldflags)
 CC := $(shell DESTDIR=$(STAGE) $(XENO_CONFIG) --cc)
 
-EXECUTABLE := jitter_and_latency jitter_and_latency2 jitter_and_latency_no_worker
+EXECUTABLE := jitter_and_latency jitter_and_latency_extern
 
 
 all: $(EXECUTABLE)
