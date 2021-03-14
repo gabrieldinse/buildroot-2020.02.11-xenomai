@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/mman.h>
 #include <alchemy/task.h>
 #include <alchemy/timer.h>
 #include <rtdm/gpio.h>
@@ -49,7 +50,7 @@ int pin_read(int pin)
 
 void led_interrupt(void *arg)
 {
-    int ret, error_code, value = 0;
+    int ret, error_code, value = 1;
     int count = 0;
     RTIME time_prev = rt_timer_read();
     RTIME time_now;
@@ -121,6 +122,8 @@ int main(int argc, char *argv[])
 {
     int ret, error_code;
     RT_TASK task_interrupt;
+
+    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     setup_gpio();
 
