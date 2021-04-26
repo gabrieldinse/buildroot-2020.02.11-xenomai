@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 
     setup_gpio();
 
-    rt_task_create(&task_interrupt, "Interrupt task", 0, 99, 0);
+    ret = rt_task_create(&task_interrupt, "Interrupt task", 0, 99, 0);
     if (ret != 0) 
     {
         error_code = -ret;
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    rt_task_start(&task_interrupt, &led_interrupt, 0);
+    ret = rt_task_start(&task_interrupt, &led_interrupt, 0);
     if (ret != 0) 
     {
         error_code = -ret;

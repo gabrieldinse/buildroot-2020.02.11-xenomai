@@ -47,7 +47,7 @@ done
 
 trap 'rm -rf "${ROOTPATH_TMP}"' EXIT
 ROOTPATH_TMP="$(mktemp -d)"
-echo -e "device_tree=bcm2837-rpi-3-b-cobalt.dtb"  >> "${BINARIES_DIR}/rpi-firmware/config.txt"
+echo "dwc_otg.fiq_enable=0 dwc_otg.fiq_fsm_enable=0 dwc_otg.nak_holdoff=0" >> ${BINARIES_DIR}/rpi-firmware/cmdline.txt
 
 rm -rf "${GENIMAGE_TMP}"
 

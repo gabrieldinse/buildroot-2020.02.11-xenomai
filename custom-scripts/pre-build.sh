@@ -22,6 +22,7 @@ make && make install
 popd
 popd
 
+
 make -C $BASE_DIR/../custom-scripts/gpio_test/
 cp  $BASE_DIR/../custom-scripts/gpio_test/xen-gpio $BASE_DIR/target/usr/xenomai/bin
 
